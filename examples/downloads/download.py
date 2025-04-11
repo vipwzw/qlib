@@ -192,10 +192,7 @@ def worker(symbol, total, index):
     
     while retry_count < MAX_RETRIES and not success:
         # 每次重试创建新交易所实例
-        exchange = getattr(ccxt, EXCHANGE)({
-            'enableRateLimit': True,
-            'rateLimit': int(REQUEST_INTERVAL * 1000)
-        })
+        exchange = getattr(ccxt, EXCHANGE)(exchange_config)
         
         try:
             # 带时间戳的进度提示
@@ -261,7 +258,36 @@ if __name__ == "__main__":
                        type=lambda x: (str(x).lower() in ['true', '1', 'yes']),
                        default=True,
                        help='是否执行数据更新（默认True）')
+    parser.add_argument("--exchange", 
+                        type=str, 
+                        default="binance",
+                        help="交易所名称 (例如: binance, okex, bybit)")
+    parser.add_argument("--proxy", 
+                        type=str, 
+                        default=None,
+                        help="代理地址 (例如: http://127.0.0.1:7890)")
+    parser.add_argument("--timeframe", 
+                        type=str, 
+                        default="1m",
+                        help="K线时间间隔 (例如: 1m, 5m, 1h, 4h, 1d)")
     args = parser.parse_args()
+    EXCHANGE = args.exchange
+    TIMEFRAME = args.timeframe
+    # 交易所配置字典
+    exchange_config = {
+        'enableRateLimit': True,
+        'rateLimit': 3000,  # 默认3秒间隔
+    }
+
+    # 代理配置
+    if args.proxy:
+        exchange_config.update({
+            'proxies': {
+                'http': args.proxy,
+                'https': args.proxy,
+                'ws': args.proxy  # WebSocket代理
+            }
+        })
     # 检查保存目录
     if not os.path.exists(SAVE_DIR):
         os.makedirs(SAVE_DIR)
