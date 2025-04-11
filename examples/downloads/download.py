@@ -152,8 +152,22 @@ def process_dataframe(ohlcv):
     df.set_index('datetime', inplace=True)
     return df[~df.index.duplicated(keep='last')].sort_index()
 
+def create_exchange() -> ccxt.Exchange:
+    """创建交易所实例"""
+    exchange_config = {
+        'enableRateLimit': True,
+    }
+    if args.proxy:
+        exchange_config.update({
+            'proxies': {
+                'http': args.proxy,  # 关键：使用socks5h协议
+                'https': args.proxy
+                }
+        })
+    return getattr(ccxt, EXCHANGE)(exchange_config)
+
 def threaded_download():
-    symbols = get_all_symbols(getattr(ccxt, EXCHANGE)(), QUOTE_CURRENCY)
+    symbols = get_all_symbols(create_exchange(), QUOTE_CURRENCY)
     total = len(symbols)
     
     # 使用队列控制请求节奏
@@ -189,10 +203,10 @@ def worker(symbol, total, index):
     """带重试机制的下载工作线程"""
     retry_count = 0
     success = False
-    
+    exchange = create_exchange()
     while retry_count < MAX_RETRIES and not success:
         # 每次重试创建新交易所实例
-        exchange = getattr(ccxt, EXCHANGE)(exchange_config)
+        
         
         try:
             # 带时间戳的进度提示
@@ -265,7 +279,7 @@ if __name__ == "__main__":
     parser.add_argument("--proxy", 
                         type=str, 
                         default=None,
-                        help="代理地址 (例如: http://127.0.0.1:7890)")
+                        help="代理地址 (例如: socks5h://127.0.0.1:1080 )")
     parser.add_argument("--timeframe", 
                         type=str, 
                         default="1m",
@@ -276,18 +290,8 @@ if __name__ == "__main__":
     # 交易所配置字典
     exchange_config = {
         'enableRateLimit': True,
-        'rateLimit': 3000,  # 默认3秒间隔
+        'rateLimit': 1000,  # 默认3秒间隔
     }
-
-    # 代理配置
-    if args.proxy:
-        exchange_config.update({
-            'proxies': {
-                'http': args.proxy,
-                'https': args.proxy,
-                'ws': args.proxy  # WebSocket代理
-            }
-        })
     # 检查保存目录
     if not os.path.exists(SAVE_DIR):
         os.makedirs(SAVE_DIR)
