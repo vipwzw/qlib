@@ -257,16 +257,6 @@ def save_as_parquet(exchange_name, symbol, timeframe, data):
 
 # 第三部分：主程序
 if __name__ == "__main__":
-    # 配置参数
-    EXCHANGE = 'binance'
-    TIMEFRAME = '1m'
-    QUOTE_CURRENCY = 'USDT'
-    HISTORICAL_DAYS = 365
-    SAVE_DIR = "data"
-    MAX_WORKERS = 10
-    REQUEST_INTERVAL = 0.2  # 每个请求间隔（秒）
-    MAX_RETRIES = 3  # 最大重试次数
-
     parser = argparse.ArgumentParser(description='交易所历史数据下载工具')
     parser.add_argument('--update', 
                        type=lambda x: (str(x).lower() in ['true', '1', 'yes']),
@@ -284,9 +274,26 @@ if __name__ == "__main__":
                         type=str, 
                         default="1m",
                         help="K线时间间隔 (例如: 1m, 5m, 1h, 4h, 1d)")
+    #days
+    parser.add_argument("--days", 
+                        type=int, 
+                        default=365,
+                        help="历史数据天数 (默认365)")
+    parser.add_argument("--save_dir", 
+                        type=str, 
+                        default="data",
+                        help="数据保存目录 (默认data)")
+ 
+    # 配置参数
     args = parser.parse_args()
     EXCHANGE = args.exchange
     TIMEFRAME = args.timeframe
+    QUOTE_CURRENCY = 'USDT'
+    HISTORICAL_DAYS = args.days
+    SAVE_DIR = args.save_dir
+    MAX_WORKERS = 10
+    REQUEST_INTERVAL = 0.2  # 每个请求间隔（秒）
+    MAX_RETRIES = 3  # 最大重试次数
     # 交易所配置字典
     exchange_config = {
         'enableRateLimit': True,
