@@ -100,6 +100,7 @@ def update_existing_data(exchange, filename, symbol, timeframe):
         df_combined = pd.concat([df_existing, df_new]).sort_index()
         df_combined = df_combined[~df_combined.index.duplicated(keep='last')]
         csv_file = csv_path(exchange.id, symbol, timeframe)
+        print("update csv_file", csv_file)
         df_combined.to_csv(csv_file)
         save_as_parquet(exchange.id, symbol, timeframe, df_combined)
         print(f"√ 成功更新 {symbol}，新增 {len(df_new)} 条记录")
@@ -137,6 +138,7 @@ def download_new_data(exchange, symbol, timeframe, days):
     if all_ohlcv:
         df = process_dataframe(all_ohlcv)
         csv_file = csv_path(exchange.id, symbol, timeframe)
+        print("new csv_file", csv_file)
         df.to_csv(csv_file)
         save_as_parquet(exchange.id, symbol, timeframe, df)
         print(f"√ 成功下载 {symbol}，共 {len(df)} 条记录")
