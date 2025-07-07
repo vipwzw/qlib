@@ -23,13 +23,13 @@ description = "A Quantitative-research Platform"
 requires-python = ">=3.8.0"
 readme = {file = "README.md", content-type = "text/markdown"}
 
-# On 2025-04-02 osqp released version 1.0.2, osqp is used as a dependency for cvxpy. 
-# It would lead to errors installing qlib, so we limited the version of osqp.
-# refs: https://github.com/osqp/osqp/issues/728
 dependencies = [
   "pyyaml",
   "numpy",
-  "pandas",
+  "pandas>=0.24",
+  # I encoutered an Error that the set_uri does not work when downloading artifacts in mlflow 3.1.1;
+  # But earlier versions of mlflow does not have this problem.
+  # But when I switch to 2.*.* version, another error occurs, which is even more strange...
   "mlflow",
   "filelock>=3.16.0",
   "redis",
@@ -42,13 +42,13 @@ dependencies = [
   "loguru",
   "lightgbm",
   "gym",
-  "osqp<1.0.2",
   "cvxpy",
   "joblib",
   "matplotlib",
   "jupyter",
   "nbconvert",
   "pyarrow",
+  "pydantic-settings",
 ]
 
 [project.optional-dependencies]
@@ -71,10 +71,17 @@ lint = [
   "flake8",
   "nbqa",
 ]
+# snowballstemmer, a dependency of sphinx, was released on 2025-05-08 with version 3.0.0,
+# which causes errors in the build process. So we've limited the version for now.
 docs = [
+  # After upgrading scipy to version 1.16.0,
+  # we encountered ImportError: cannot import name '_lazywhere', in the build documentation,
+  # so we restricted the version of scipy to: 1.15.3
+  "scipy<=1.15.3",
   "sphinx",
   "sphinx_rtd_theme",
   "readthedocs_sphinx_ext",
+  "snowballstemmer<3.0",
 ]
 package = [
   "twine",
@@ -87,6 +94,7 @@ test = [
 ]
 analysis = [
   "plotly",
+  "statsmodels",
 ]
 
 [tool.setuptools]
