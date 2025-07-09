@@ -1,0 +1,201 @@
+apis:
+  binance:
+    api_key: ${BINANCE_API_KEY}
+    rate_limit: 1200
+    sandbox: ${BINANCE_SANDBOX:true}
+    secret_key: ${BINANCE_SECRET_KEY}
+  newsapi:
+    api_key: ${NEWS_API_KEY}
+    enabled: ${NEWS_API_ENABLED:false}
+  twitter:
+    bearer_token: ${TWITTER_BEARER_TOKEN}
+    enabled: ${TWITTER_ENABLED:false}
+concurrency:
+  batch_size: 100
+  max_workers: 4
+  timeout: 30
+data:
+  factors:
+    data_dir: data/factors
+    save_format: parquet
+  news:
+    data_dir: data/raw/news
+    keywords:
+    - bitcoin
+    - btc
+    - cryptocurrency
+    - crypto
+    - blockchain
+    - digital currency
+    - virtual currency
+    languages:
+    - en
+    processed_dir: data/processed/news
+  price:
+    data_dir: data/raw/price
+    exchange: binance
+    lookback_days: 30
+    symbol: BTC/USDT
+    timeframe: 1m
+database:
+  mongodb:
+    collections:
+      factors: factor_data
+      news: news_data
+    database: news_factor
+    host: localhost
+    port: 27017
+  redis:
+    db: 0
+    expire_seconds: 3600
+    host: localhost
+    port: 6379
+development:
+  debug: false
+  mock_data: false
+  profiling: false
+  test_mode: false
+evaluation:
+  backtest:
+    end_date: '2025-07-08'
+    initial_capital: 100000
+    max_trades_per_day: 50
+    min_holding_minutes: 5
+    rebalance_freq: 1min
+    slippage: 0.0
+    start_date: '2025-05-22'
+    transaction_cost: 0.0015
+  benchmark:
+    strategy: buy_and_hold
+    symbol: BTC/USDT
+  ic_analysis:
+    periods:
+    - 1
+    - 5
+    - 15
+    - 60
+    rolling_window: 30
+factors:
+  aggregation_methods:
+  - mean
+  - std
+  - count
+  - min
+  - max
+  base_factors:
+  - sentiment_score
+  - sentiment_volatility
+  - news_volume
+  - sentiment_momentum
+  - weighted_sentiment
+  composite_factors:
+  - momentum_sentiment
+  - volume_sentiment
+  - volatility_sentiment
+  normalization:
+    method: zscore
+    rolling_window: 252
+  rolling_windows:
+  - 5
+  - 10
+  - 20
+  - 60
+  timeframes:
+  - 1m
+  - 5m
+  - 15m
+  - 1h
+logging:
+  file: logs/news_factor.log
+  format: '{time:YYYY-MM-DD HH:mm:ss} | {level} | {name}:{function}:{line} - {message}'
+  level: INFO
+  retention: 30 days
+  rotation: 10 MB
+monitoring:
+  enabled: true
+  metrics:
+  - data_collection_rate
+  - sentiment_analysis_latency
+  - factor_update_frequency
+  - memory_usage
+  - cpu_usage
+news_sources:
+  feixiaohao:
+    api_url: https://api.fxhnews.com/api/v4/news/news
+    enabled: true
+    max_pages: 50
+    name: "\u975E\u5C0F\u53F7"
+    per_page: 100
+    type: api
+    update_interval: 300
+    weight: 1.0
+production:
+  alert_email: ''
+  auto_restart: true
+  backup_interval: 3600
+  health_check_interval: 60
+project:
+  description: BTC/USDT news sentiment quantitative factor analysis
+  name: News Sentiment Factor Analysis
+  version: 1.0.0
+sentiment:
+  default_engine: deepseek
+  deepseek:
+    enabled: true
+    api_key: ${DEEPSEEK_API_KEY}
+    base_url: ${DEEPSEEK_BASE_URL:https://api.deepseek.com/v1}
+    model: ${DEEPSEEK_MODEL:deepseek-chat}
+    max_tokens: 200
+    temperature: 0.1
+    max_workers: 50
+    batch_size: 10
+    timeout: 30
+    max_retries: 3
+    weight: 1.0
+  cache:
+    enabled: true
+    expire_hours: 24
+  models:
+    finbert:
+      enabled: false
+      max_length: 512
+      model_name: ProsusAI/finbert
+      weight: 0.5
+    textblob:
+      enabled: false
+      weight: 0.2
+    vader:
+      enabled: false
+      weight: 0.3
+    keywords:
+      enabled: true
+      weight: 0.1
+  preprocessing:
+    lowercase: true
+    remove_hashtags: false
+    remove_mentions: true
+    remove_punctuation: false
+    remove_urls: true
+strategy:
+  trading_mode: spot
+  position_sizing:
+    fixed_size: 0.95
+    leverage: 1.0
+    method: fixed
+  risk_management:
+    volatility_lookback: 60
+    stop_loss_multiplier: 1.5
+    take_profit_multiplier: 2.5
+    min_stop_loss: 0.02
+    max_stop_loss: 0.05
+    min_take_profit: 0.05
+    max_take_profit: 0.2
+    max_holding_minutes: 120
+  signal_generation:
+    holding_period: 30
+    max_positions: 1
+    news_lookback_minutes: 10
+    sentiment_threshold_buy: 0.07
+    sentiment_threshold_sell: -0.03
+    signal_decay_minutes: 5
+    threshold: 0.01
